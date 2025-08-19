@@ -1,31 +1,22 @@
 import { ValidationPipe } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+// import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 const cookieParser = require("cookie-parser");
 import { AppModule } from "./app.module";
-import { PrismaExceptionFilter } from "./common/filters/prisma-exception.filter";
+// import { PrismaExceptionFilter } from "./common/filters/prisma-exception.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
 
   app.use(cookieParser());
 
   // Set up CORS
   app.enableCors();
 
-  // Global pipes
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
 
-  // Global filters
-  app.useGlobalFilters(new PrismaExceptionFilter());
+
+  
 
   // Set up Swagger
   const config = new DocumentBuilder()
@@ -51,8 +42,8 @@ async function bootstrap() {
   });
 
   // Start the server
-  const port = configService.get<number>("PORT") || 5000;
-  await app.listen(port, "0.0.0.0");
-  console.log(`Application is running on: http://localhost:${port}`);
+ 
+  await app.listen(8000);
+  console.log(`Application is running on: http://localhost:8000`);
 }
 bootstrap();
