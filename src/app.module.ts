@@ -7,7 +7,7 @@ import configuration from "./config/configuration";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { ProductsModule } from "./products/products.module";
-import { PrismaService } from "./prisma/prisma.service";
+// import { PrismaService } from "./prisma/prisma.service";
 // import { CompanyModule } from './company/company.module';
 
 @Module({
@@ -30,6 +30,6 @@ import { PrismaService } from "./prisma/prisma.service";
   ],
 
   controllers: [AppController],
-  providers: [AppService, PrismaService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule { }

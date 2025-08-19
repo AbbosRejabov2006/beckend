@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { supabase } from 'src/supabase/supabase_client';
 
 @WebSocketGateway({
     cors: {
@@ -20,7 +20,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
     port: 3001,
 })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-    constructor(private readonly prisma: PrismaService) { }
+
 
     @WebSocketServer() server: Server;
     private readonly logger = new Logger(EventsGateway.name);
@@ -86,36 +86,31 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         try {
             const products = JSON.parse(payload);
 
-            const product = await this.prisma.product.upsert({
-                where: {
-                    id: "d3f8b29e-7c21-4b6f-8a9f-23d4a1f62c3b"
-                },
-                update: {
-                    name: JSON.stringify(products.products),
-                    barcode: JSON.stringify(products.categories),
-                },
-                create: {
-                    id: "d3f8b29e-7c21-4b6f-8a9f-23d4a1f62c3b",
-                    name: "[]",
-                    barcode: "[]",
-                    sales: "[]",
-                    debtor: "[]",
-                    payments: "[]",
-                },
-            });
+            const { data: product, error: error2 } = await supabase
+                .from('Products')
+                .update({
+                    products: JSON.stringify(products.products),
+                    categories: JSON.stringify(products.categories),
+                })
+                .eq('id', 1).select();
 
-            this.server.emit('data', `{"products": ${JSON.stringify(product.name)}, "categories": ${JSON.stringify(product.barcode)}}`);
+            this.server.emit('data', `{"products": ${JSON.stringify(product[0].products)}, "categories": ${JSON.stringify(product[0].categories)}}`);
 
         } catch (error) {
-            this.logger.error(`❌ Xatolik: ${error.message}`);
-            const product = await this.prisma.product.findUnique({
-                where: {
-                    id: "d3f8b29e-7c21-4b6f-8a9f-23d4a1f62c3b"
-                }
-            });
-            // console.log(product);
-            const products = JSON.parse(product.name || "[]");
-            const categories = JSON.parse(product.barcode || "[]");
+
+            const { data, error: error2 } = await supabase
+                .from('Products')
+                .select('*')
+                .eq('id', 1);
+
+            if (error2) {
+                console.error(error2);
+            }
+
+            console.log(data);
+            const products = JSON.parse(data[0].products);
+            const categories = JSON.parse(data[0].categories);
+
             const res = `{"products": ${JSON.stringify(products)}, "categories": ${JSON.stringify(categories)}}`;
             console.log(res);
             // client.send('data', res);
